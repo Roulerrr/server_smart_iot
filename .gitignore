@@ -1,0 +1,13 @@
+# environment variables
+.env
+*.env
+
+# node / server common
+node_modules/
+
+# logs
+*.log
+
+# OS
+.DS_Store
+
