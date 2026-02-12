@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+        }
+
+        .device-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .device-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .sensor-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .sensor-card .icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .sensor-card .label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .sensor-card .value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .relay-control {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .relay-switch {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .relay-switch .icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .relay-switch .name {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #10b981;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .status {
+            margin-top: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status.on {
+            color: #10b981;
+        }
+
+        .status.off {
+            color: #ef4444;
+        }
+
+        .connection-status {
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .connection-status.connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .connection-status.disconnected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏠 Smart Home Dashboard</h1>
+            <div class="user-info">
+                <span id="username">Loading...</span>
+                <button class="btn btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <!-- Connection Status -->
+        <div id="connectionStatus" class="connection-status disconnected">
+            ⚠️ Disconnected from server
+        </div>
+
+        <!-- Device Info -->
+        <div class="device-section">
+            <h2>📱 Device: <span id="deviceName">Living Room Sensor</span></h2>
+            
+            <!-- Sensor Data -->
+            <h3 style="margin: 20px 0 10px 0; color: #666;">Real-time Sensor Data</h3>
+            <div class="sensor-grid">
+                <div class="sensor-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="icon">🌡️</div>
+                    <div class="label">Temperature</div>
+                    <div class="value"><span id="temperature">--</span>°C</div>
+                </div>
+
+                <div class="sensor-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="icon">💧</div>
+                    <div class="label">Humidity</div>
+                    <div class="value"><span id="humidity">--</span>%</div>
+                </div>
+
+                <div class="sensor-card" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                    <div class="icon">☀️</div>
+                    <div class="label">Light Level</div>
+                    <div class="value"><span id="light">--</span>%</div>
+                </div>
+
+                <div class="sensor-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                    <div class="icon">🌱</div>
+                    <div class="label">Soil Moisture</div>
+                    <div class="value"><span id="soil">--</span>%</div>
+                </div>
+
+                <div class="sensor-card" style="background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);">
+                    <div class="icon">💨</div>
+                    <div class="label">Gas Level</div>
+                    <div class="value"><span id="gas">--</span>%</div>
+                </div>
+
+                <div class="sensor-card" style="background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);">
+                    <div class="icon">🌧️</div>
+                    <div class="label">Rain Sensor</div>
+                    <div class="value"><span id="rain">--</span>%</div>
+                </div>
+            </div>
+
+            <!-- Relay Control -->
+            <h3 style="margin: 20px 0 10px 0; color: #666;">Relay Control</h3>
+            <div class="relay-control">
+                <div class="relay-switch">
+                    <div class="icon">💡</div>
+                    <div class="name">Light</div>
+                    <label class="switch">
+                        <input type="checkbox" id="relayLight" onchange="controlRelay(1, this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                    <div class="status off" id="statusLight">OFF</div>
+                </div>
+
+                <div class="relay-switch">
+                    <div class="icon">💧</div>
+                    <div class="name">Pump</div>
+                    <label class="switch">
+                        <input type="checkbox" id="relayPump" onchange="controlRelay(2, this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                    <div class="status off" id="statusPump">OFF</div>
+                </div>
+
+                <div class="relay-switch">
+                    <div class="icon">🌀</div>
+                    <div class="name">Fan</div>
+                    <label class="switch">
+                        <input type="checkbox" id="relayFan" onchange="controlRelay(3, this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                    <div class="status off" id="statusFan">OFF</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const WS_URL = 'ws://localhost:3000';  // เปลี่ยนเป็น URL ของ server จริง
+        let ws = null;
+
+        // Check if user is logged in
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        // Display username
+        document.getElementById('username').textContent = user.username || 'User';
+
+        // WebSocket Connection
+        function connectWebSocket() {
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                console.log('WebSocket Connected');
+                updateConnectionStatus(true);
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('Received:', data);
+
+                    if (data.type === 'sensor_reading') {
+                        updateSensorData(data);
+                        updateRelayStatus(data.relay_status);
+                    }
+                } catch (err) {
+                    console.error('Error parsing message:', err);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket Error:', error);
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket Disconnected');
+                updateConnectionStatus(false);
+                // Reconnect after 5 seconds
+                setTimeout(connectWebSocket, 5000);
+            };
+        }
+
+        // Update Connection Status
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            if (connected) {
+                statusEl.className = 'connection-status connected';
+                statusEl.textContent = '✅ Connected to server';
+            } else {
+                statusEl.className = 'connection-status disconnected';
+                statusEl.textContent = '⚠️ Disconnected from server - Reconnecting...';
+            }
+        }
+
+        // Update Sensor Data
+        function updateSensorData(data) {
+            document.getElementById('temperature').textContent = data.temperature?.toFixed(1) || '--';
+            document.getElementById('humidity').textContent = data.humidity?.toFixed(1) || '--';
+            document.getElementById('light').textContent = data.light_level || '--';
+            document.getElementById('soil').textContent = data.soil_moisture || '--';
+            document.getElementById('gas').textContent = data.co2_ppm || '--';
+            document.getElementById('rain').textContent = data.rain_analog || '--';
+        }
+
+        // Update Relay Status from ESP32
+        function updateRelayStatus(relayStatus) {
+            // Format: "L:1,P:0,F:1"
+            if (!relayStatus) return;
+
+            const parts = relayStatus.split(',');
+            parts.forEach(part => {
+                const [relay, status] = part.split(':');
+                const isOn = status === '1';
+
+                if (relay === 'L') {
+                    updateRelayUI('Light', isOn);
+                } else if (relay === 'P') {
+                    updateRelayUI('Pump', isOn);
+                } else if (relay === 'F') {
+                    updateRelayUI('Fan', isOn);
+                }
+            });
+        }
+
+        // Update Relay UI
+        function updateRelayUI(relayName, isOn) {
+            const checkbox = document.getElementById('relay' + relayName);
+            const statusEl = document.getElementById('status' + relayName);
+
+            checkbox.checked = isOn;
+            statusEl.textContent = isOn ? 'ON' : 'OFF';
+            statusEl.className = isOn ? 'status on' : 'status off';
+        }
+
+        // Control Relay (Send command to server)
+        function controlRelay(channel, isOn) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                alert('Not connected to server');
+                return;
+            }
+
+            const command = {
+                type: 'control_relay',
+                channel: channel,
+                relay_status: isOn ? 'ON' : 'OFF'
+            };
+
+            ws.send(JSON.stringify(command));
+            console.log('Sent command:', command);
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            if (ws) ws.close();
+            window.location.href = '/login.html';
+        }
+
+        // Connect on page load
+        connectWebSocket();
+    </script>
+</body>
+</html>

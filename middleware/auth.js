@@ -7,7 +7,7 @@ const authenticateToken = (req, res, next) => {
     if (!token) {
         return res.status(401).json({ error: 'Access denied. No token provided.' });
     }
-    jwt.verify(token, process.env.JWT_SCREET, (err, user) => {
+    jwt.verify(token, process.env.JWT_SCRET, (err, user) => {
         if(err) {
             return res.status(403).json({ error: 'Invalid token.' });
         } else {
